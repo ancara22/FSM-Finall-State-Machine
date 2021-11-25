@@ -1,0 +1,152 @@
+#lang racket/base
+
+(require racket/gui)
+
+
+
+;State list with events and final resulting state !!!
+(define state-tab '(                      
+                    ((1 "a")2)
+                    ((1 "b")3)
+                    ((2 "a")1)
+                    ((2 "b")3)
+                    ((3 "a")2)
+                    ((3 "b")1)
+                   ))
+
+
+
+;Next state function change, st=state, ev=event, table=state table !!! 
+(define next-state(lambda(st ev table)        
+             (cond
+                ((and (= st (first(first(first table)))) (equal? ev (last(first(first table)))))
+                  (printf (string-append (~a st) " -> "))
+                  (last(first table)))
+                (else (next-state st ev (rest table))))))
+
+
+
+
+;Function for mullty events !!!
+(define run-state(lambda(st ev table)        
+                   (cond
+                     ((not(empty? ev))
+                      (run-state (next-state st (first ev) table) (rest ev) table))
+                     ((empty? ev)
+                        (print st)
+                        (send resultFrame set-label (string-append  "     Finall State is: " (~a st)))))))
+
+
+
+
+
+
+
+
+;GUI______________________________________________________________________________________________________________
+
+
+;Font
+(define the-font (make-font #:size 21 #:family 'default          
+                            #:weight 'bold))
+
+
+;Main frame
+(define frame (new frame%                                        
+                   [label "Finall State Machine"]
+                   (width 400)
+                   [height 200]
+                   ))
+
+
+;Table change button
+
+(define (editTable) (send tableBox show #t))
+
+(new button%
+     [parent frame] 
+     [label "Change Table"]
+     [callback (lambda(this event) (editTable))]
+     [vert-margin 10])
+
+
+;Input State & Event box
+(define input-box (new group-box-panel%                          
+                             [parent frame]
+                             [label " "]))
+
+;Radio Box for States   
+(define radioBox(new radio-box%                                       
+               [label "Start State:    "]
+               [choices  '("1" "2" "3")]
+               [style '(horizontal)]          
+               [parent input-box ]
+               [vert-margin 20]))
+
+
+;Event text form
+(define eventTextForm (new text-field%                           
+                     [label "Event list:"]  	
+                     [parent input-box ]
+                     [horiz-margin 50]
+                     [vert-margin 10]))
+
+
+;Start button
+(new button%
+     [parent input-box] 
+     [label "Start"]
+     [callback (lambda(this event) (go))])
+
+
+
+;Result Output frame
+(define resultFrame(new message%                                  
+                         [label "        ->  Result  <-       "]
+                         [parent frame]
+                         [font the-font]
+                         [vert-margin 35]))
+
+
+;Start callback function
+(define (go)                                                      
+  (run-state (+ 1 (send radioBox get-selection)) (string-split (send eventTextForm get-value) " ")  state-tab))
+
+
+
+
+
+
+
+
+;Table box
+(define tableBox (new frame%
+                             [label "Table"]
+                             [height 280]
+                             [width 200]))
+
+
+
+;Table input form
+
+(define tableTextForm (new text-field%
+                     [label "State Event Final-state\n"]  	
+                     [parent  tableBox]
+                     [style '(multiple vertical-label hscroll)]
+                     [horiz-margin 20]
+                     [vert-margin 10]
+                     [init-value "  1 a 2\n  1 b 3\n  2 a 1"]))
+
+;Table change button
+(new button%
+     [parent tableBox] 
+     [label "Save"]
+     [vert-margin 15])
+
+
+
+
+            
+(send frame show #t) ;GUI start app
+
+ 
