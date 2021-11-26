@@ -8,36 +8,17 @@
 
 (define next-state(lambda(st ev table)                                     ;Next state function change, st=state, ev=event, table=state table !!! 
              (cond
-                ((and (= st (first(first(first table)))) (equal? ev (last(first(first table)))))
-                  (printf (string-append (~a st) " -> "))
-                  (last(first table)))
-                (else (next-state st ev (rest table))))))
+                ((and (= st (string->number(first table))) (equal? ev (second table)))
+                  (string->number(third table)))
+                (else (next-state st ev (rest(rest(rest table))))))))
 
 
 (define run-state(lambda(st ev table)                                      ;Function for multiple events !!!
                    (cond
                      ((not(empty? ev))
                       (run-state (next-state st (first ev) table) (rest ev) table))
-                     ((empty? ev)
-                        (print st)
-                        (send resultFrame set-label (string-append  "     Final State is: " (~a st)))))))
+                     (else (send resultFrame set-label (string-append  "     Final State is: " (~a st)))))))
 
-
-
-(define (convertList lst)                                                  ;Table convert functions
-  (cond
-    ((not(empty? lst))
-     (append (list(list (list (first lst) (second lst)) (third lst))) (convertList (rest(rest(rest lst))))))
-    (else '())))
-
-
-(define (getTable str)
-  (convertList (map (lambda (el)
-                         (cond
-                           ((number? (string->number el))(string->number el))
-                           (else el)))
-                       (string-split str)))) 
-  
 
 
 
@@ -80,7 +61,10 @@
      [parent input-box] 
      [label "Start"]
      [callback (lambda(this event)
-                 (run-state (string->number (send startStateInput get-value)) (string-split (send eventTextForm get-value) " ")   (getTable (send tableTextForm get-value))))])
+                 (run-state
+                     (string->number (send startStateInput get-value))
+                     (string-split (send eventTextForm get-value) " ")
+                     (string-split (send tableTextForm get-value))))])
 
 
 
@@ -97,4 +81,4 @@
 
 (send frame show #t) ;GUI start app
 
- 
+
